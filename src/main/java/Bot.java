@@ -48,7 +48,7 @@ public class Bot extends TelegramLongPollingBot {
                 message.setText(Sorteador.repartirEntre(restoDelMensaje));
                 break;
             case "Hello":
-                enviarFoto("/target/classes/images/helloWorld.png", chatId);
+                enviarFoto("/classes/images/helloWorld.png", chatId);
                 
                 break;
             default:
