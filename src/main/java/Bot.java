@@ -2,6 +2,9 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import java.io.*;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -20,6 +23,9 @@ public class Bot extends TelegramLongPollingBot {
         String comandoPrincipal = partesDelComando[0];
         String restoDelMensaje = partesDelComando[1];
 
+        String chatId = String.valueOf(update.getMessage().getChatId());
+        message.setChatId(chatId);
+
         switch (comandoPrincipal) {
             case "numeroRandom":
                 String[] partsV = restoDelMensaje.split(",");
@@ -32,7 +38,7 @@ public class Bot extends TelegramLongPollingBot {
             case "elegirEntre":
                 message.setText("Elijo: " + Sorteador.elegirEntre(restoDelMensaje));
                 break;
-            
+
             case "mezclar":
                 String mezcla = Sorteador.darFormatoSalidaLista(Sorteador.mezclar(restoDelMensaje));
                 message.setText(mezcla);
@@ -41,22 +47,47 @@ public class Bot extends TelegramLongPollingBot {
             case "repartirEntre":
                 message.setText(Sorteador.repartirEntre(restoDelMensaje));
                 break;
+            case "Hello":
+                enviarFoto("images/helloWorld.png", chatId);
+                break;
             default:
                 break;
         }
 
-        long i = update.getMessage().getChatId();
-        String s = String.valueOf(i);
-        message.setChatId(s);
 
         try {
-            execute(message);
+            if(!message.getText().isEmpty()){
+                execute(message);
+            }  
         } catch (TelegramApiException ex) {
+            System.out.println(ex);
         }
     }
 
     @Override
     public String getBotUsername() {
         return "OfficialNavi_bot";
+    }
+
+    private InputFile getImageAsInpuFile(String rutaImagen) {
+        File image = null;
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            image = new File(classLoader.getResource(rutaImagen).getFile());
+        } catch (Exception e) {
+            System.out.println("Error al acceder a la imagen: " + image.toString());
+        }
+        return new InputFile(image);
+    }
+
+    private void enviarFoto(String rutaImagen, String chatId) {
+        try {
+            SendPhoto sendPhoto = new SendPhoto();
+            sendPhoto.setPhoto(getImageAsInpuFile(rutaImagen));
+            sendPhoto.setChatId(chatId);
+            execute(sendPhoto);
+        } catch (Exception h) {
+            System.out.println(h);
+        }
     }
 }
