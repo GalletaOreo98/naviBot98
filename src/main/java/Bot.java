@@ -49,7 +49,7 @@ public class Bot extends TelegramLongPollingBot {
                 break;
             case "Hello":
                 //enviarFoto("/classes/images/helloWorld.png", chatId);
-                String ruta = getClass().getClassLoader().getResource("Bot.class").getPath();
+                String ruta = getClass().getClassLoader().getResource("helloWorld.png").getPath();
                 System.out.println(ruta);
                 break;
             default:
