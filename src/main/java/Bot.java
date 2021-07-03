@@ -4,6 +4,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import java.io.*;
 
 public class Bot extends TelegramLongPollingBot {
@@ -47,11 +48,13 @@ public class Bot extends TelegramLongPollingBot {
             case "repartirEntre":
                 message.setText(Sorteador.repartirEntre(restoDelMensaje));
                 break;
-            case "Hello":
+            case "HelloImage":
                 enviarFoto("helloWorld.png", chatId);
                 String ruta = getClass().getClassLoader().getResource("helloWorld.png").getPath();
                 System.out.println(ruta);
                 break;
+            case "HelloSticker":
+                enviarSticker("helloSticker.webp", chatId);
             default:
                 break;
         }
@@ -88,6 +91,17 @@ public class Bot extends TelegramLongPollingBot {
             sendPhoto.setPhoto(getImageAsInpuFile(rutaImagen));
             sendPhoto.setChatId(chatId);
             execute(sendPhoto);
+        } catch (Exception h) {
+            System.out.println(h);
+        }
+    }
+
+    private void enviarSticker(String rutaSticker, String chatId){
+        try {
+            SendSticker sendSticker = new SendSticker();
+            sendSticker.setSticker(getImageAsInpuFile(rutaSticker));
+            sendSticker.setChatId(chatId);
+            execute(sendSticker);
         } catch (Exception h) {
             System.out.println(h);
         }
