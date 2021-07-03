@@ -1,4 +1,5 @@
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -55,6 +56,10 @@ public class Bot extends TelegramLongPollingBot {
                 break;
             case "HelloSticker":
                 enviarSticker("helloSticker.webp", chatId);
+                break;
+            case "Audio":
+                enviarAudio("db.mp3", chatId);
+                break;
             default:
                 break;
         }
@@ -102,6 +107,17 @@ public class Bot extends TelegramLongPollingBot {
             sendSticker.setSticker(getImageAsInpuFile(rutaSticker));
             sendSticker.setChatId(chatId);
             execute(sendSticker);
+        } catch (Exception h) {
+            System.out.println(h);
+        }
+    }
+
+    private void enviarAudio(String rutaAudio, String chatId){
+        try {
+            SendAudio sendAudio = new SendAudio();
+            sendAudio.setAudio(getImageAsInpuFile(rutaAudio));
+            sendAudio.setChatId(chatId);
+            execute(sendAudio);
         } catch (Exception h) {
             System.out.println(h);
         }
