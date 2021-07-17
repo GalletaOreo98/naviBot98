@@ -18,13 +18,21 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        String command = update.getMessage().getText();
 
+        String command = update.getMessage().getText();
         SendMessage message = new SendMessage();
 
-        String[] partesDelComando = command.split(" ");
-        String comandoPrincipal = partesDelComando[0];
-        String restoDelMensaje = partesDelComando[1];
+
+        String[] partesDelComando= new String[2];
+        String comandoPrincipal= new String();
+        String restoDelMensaje = new String();
+        try {
+            partesDelComando = command.split(" ");
+            comandoPrincipal = partesDelComando[0];
+            restoDelMensaje = partesDelComando[1];
+        } catch (Exception e) {
+            comandoPrincipal=command;
+        } 
 
         String chatId = String.valueOf(update.getMessage().getChatId());
         message.setChatId(chatId);
@@ -37,30 +45,29 @@ public class Bot extends TelegramLongPollingBot {
                 message.setText("" + Sorteador.generarNumeroAleatorio(x1, x2));
                 System.out.println(command);
                 break;
-
             case "elegirEntre":
                 message.setText("Elijo: " + Sorteador.elegirEntre(restoDelMensaje));
                 break;
-
             case "mezclar":
                 String mezcla = Sorteador.darFormatoSalidaLista(Sorteador.mezclar(restoDelMensaje));
                 message.setText(mezcla);
                 break;
-
             case "repartirEntre":
                 message.setText(Sorteador.repartirEntre(restoDelMensaje));
                 break;
             case "HelloImage":
-                enviarFoto("helloWorld.png", chatId);
+                enviarFoto("imagenes/helloWorld.png", chatId);
                 String ruta = getClass().getClassLoader().getResource("helloWorld.png").getPath();
                 System.out.println(ruta);
                 break;
             case "HelloSticker":
-                enviarSticker("helloSticker.webp", chatId);
+                enviarSticker("stickers/helloSticker.webp", chatId);
                 break;
-            case "Audio":
-                enviarVoice("db.mp3", chatId);
+            case "Voice":
+                enviarVoice("Voice/db.mp3", chatId);
                 break;
+            case "Adios":
+                message.setText("Adios UwU");
             default:
                 break;
         }
