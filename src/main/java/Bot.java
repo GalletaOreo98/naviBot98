@@ -74,7 +74,7 @@ public class Bot extends TelegramLongPollingBot{
             enviarSticker("stickers/helloSticker.webp", chatId);
             break;
         case "Voice":
-            enviarVoice("Voice/db.mp3", chatId);
+            enviarVoice("voice/db.mp3", chatId);
             break;
         case "Adios":
             message.setText("Adios UwU");
