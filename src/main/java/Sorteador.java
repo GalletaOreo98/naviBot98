@@ -44,6 +44,9 @@ public class Sorteador {
         String elementos = parts[1];
         ArrayList<String> mezclaSujetos = mezclar(sujetos);
         ArrayList<String> mezclaElementos = mezclar(elementos);
+        for (int i = 0; i < mezclaSujetos.size(); i++) {
+            mezclaSujetos.set(i, mezclaSujetos.get(i) + ":");
+        }
         int contadorElemento=0;
         while (contadorElemento < mezclaElementos.size()) {
             for (int i = 0; i < mezclaSujetos.size(); i++) {
