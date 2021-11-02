@@ -1,7 +1,7 @@
 .env
 .vscode
 .settings
-/.classpath
+.classpath
 target
 .vscode
 .project

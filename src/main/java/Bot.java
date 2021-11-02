@@ -86,9 +86,6 @@ public class Bot extends TelegramLongPollingBot{
         case "Help":
             message.setText(getInfoComados());
             break;
-        case "Tarea":
-            message.setText("Tarea nueva agregada");
-            break;
         default:
             break;
         }
