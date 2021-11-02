@@ -21,6 +21,7 @@ public class Bot extends TelegramLongPollingBot{
             "Adios\nDevuelve una despedida" 
     };
 
+    //En la carpeta raiz se agrega un file .env para acceder a claves como bot_token con dotenv class
     private Dotenv dotenv = Dotenv.configure().load();
     private String BOT_TOKEN = dotenv.get("MY_BOT_TOKEN");
 
