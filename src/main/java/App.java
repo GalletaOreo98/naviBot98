@@ -13,6 +13,5 @@ public class App
             } catch (TelegramApiException e) {
             }
         System.out.println("Bot Iniciado");
-        
     }
 }

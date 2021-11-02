@@ -7,10 +7,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
 import java.io.*;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class Bot extends TelegramLongPollingBot{
 
-    String[] comandosInfo = { "numeroRandom n1,n2\nDevuelve un numero aleatorio entre x1 y x2",
+    private String[] comandosInfo = { "numeroRandom n1,n2\nDevuelve un numero aleatorio entre x1 y x2",
             "elegirEntre e1,e2,e3,...en\nElije un elemento entre la lista de elementos que se proporcione",
             "mezclar e1,e2,e3,...en\nMezcla aleatoriamente los elementos de la lista proporcionada y la devuelve",
             "repartirEntre s1,s2,s3,...sn-e1,e2,e3,...en\nReparte entre los n sujetos los n elementos de manera igualitaria y aleatoria y devuelve la lista",
@@ -20,9 +21,12 @@ public class Bot extends TelegramLongPollingBot{
             "Adios\nDevuelve una despedida" 
     };
 
+    private Dotenv dotenv = Dotenv.configure().load();
+    private String BOT_TOKEN = dotenv.get("MY_BOT_TOKEN");
+
     @Override
     public String getBotToken() {
-        return "1505442251:AAEZfr09JbOhFz0v5iRL_oa3aCEPHmgef9Q";
+        return BOT_TOKEN;
     }
 
     @Override
@@ -81,6 +85,9 @@ public class Bot extends TelegramLongPollingBot{
             break;
         case "Help":
             message.setText(getInfoComados());
+            break;
+        case "Tarea":
+            message.setText("Tarea nueva agregada");
             break;
         default:
             break;
@@ -152,11 +159,4 @@ public class Bot extends TelegramLongPollingBot{
         return comandosString;
     }
 
-    private void retraso(int milisegundos){
-        try {
-            Thread.sleep(milisegundos);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 }
