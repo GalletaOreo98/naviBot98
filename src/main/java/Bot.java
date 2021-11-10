@@ -8,6 +8,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
 import java.io.*;
 import io.github.cdimascio.dotenv.Dotenv;
+import java.awt.image.BufferedImage;
+import java.awt.*;
+import javax.imageio.ImageIO;
 
 public class Bot extends TelegramLongPollingBot{
 
@@ -71,7 +74,7 @@ public class Bot extends TelegramLongPollingBot{
             message.setText(Sorteador.repartirEntre(restoDelMensaje));
             break;
         case "HelloImage":
-            enviarFoto("imagenes/helloWorld.png", chatId);
+            enviarFoto("images/helloWorld.png", chatId);
             String ruta = getClass().getClassLoader().getResource("helloWorld.png").getPath();
             System.out.println(ruta);
             break;
@@ -86,6 +89,9 @@ public class Bot extends TelegramLongPollingBot{
             break;
         case "Help":
             message.setText(getInfoComados());
+            break;
+        case "Dibujar":
+            dibujarImagen(chatId, restoDelMensaje);
             break;
         default:
             break;
@@ -111,7 +117,7 @@ public class Bot extends TelegramLongPollingBot{
             ClassLoader classLoader = getClass().getClassLoader();
             image = new File(classLoader.getResource(rutaImagen).getFile());
         } catch (Exception e) {
-            System.out.println("Error al acceder a la imagen: " + image.toString());
+            System.out.println("Error al acceder a la imagen:");
         }
         return new InputFile(image);
     }
@@ -155,6 +161,29 @@ public class Bot extends TelegramLongPollingBot{
             comandosString=comandosString+(i+1)+". "+comandosInfo[i]+"\n";
         }
         return comandosString;
+    }
+
+    private void dibujarImagen(String chatId, String texto){
+        try{
+        BufferedImage imagen = new BufferedImage(400,400, BufferedImage.TYPE_INT_RGB);
+	    Graphics2D g2;         
+        g2 = imagen.createGraphics();
+        g2.setColor(Color.white);
+        g2.fillRect(0, 0, 400, 400);
+        g2.setColor(Color.black);
+        g2.drawString(texto, 100, 100);  
+        File file = new File("prueba.png");
+        ImageIO.write(imagen, "png", file);
+        InputFile inputFile = new InputFile(file);
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setPhoto(inputFile);
+        sendPhoto.setChatId(chatId);
+        execute(sendPhoto);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        
+       
     }
 
 }
