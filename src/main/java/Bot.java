@@ -1,13 +1,19 @@
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
 import java.io.*;
 import io.github.cdimascio.dotenv.Dotenv;
+import net.coobird.thumbnailator.Thumbnails;
+
 import java.awt.image.BufferedImage;
 import java.awt.*;
 import javax.imageio.ImageIO;
@@ -36,6 +42,11 @@ public class Bot extends TelegramLongPollingBot {
 
         String command = update.getMessage().getText();
         SendMessage message = new SendMessage();
+        boolean isReply = false;
+
+        if (update.getMessage().isReply()) {
+            isReply = true;
+        }
 
         String[] partesDelComando = new String[2];
         String comandoPrincipal = new String();
@@ -52,67 +63,120 @@ public class Bot extends TelegramLongPollingBot {
         String chatId = String.valueOf(update.getMessage().getChatId());
         message.setChatId(chatId);
 
-        switch (comandoPrincipal) {
-        case "numeroRandom":
-            String[] partsV = restoDelMensaje.split(",");
-            int x1 = Integer.parseInt(partsV[0]);
-            int x2 = Integer.parseInt(partsV[1]);
-            message.setText("" + Sorteador.generarNumeroAleatorio(x1, x2));
-            break;
-        case "elegirEntre":
-            message.setText("Elijo: " + Sorteador.elegirEntre(restoDelMensaje));
-            break;
-        case "mezclar":
-            String mezcla = Sorteador.darFormatoSalidaLista(Sorteador.mezclar(restoDelMensaje));
-            message.setText(mezcla);
-            break;
-        case "repartirEntre":
-            message.setText(Sorteador.repartirEntre(restoDelMensaje));
-            break;
-        case "helloImage":
-            enviarFoto("images/helloWorld.png", chatId);
-            String ruta = getClass().getClassLoader().getResource("helloWorld.png").getPath();
-            System.out.println(ruta);
-            break;
-        case "Hello":
-            enviarSticker("stickers/helloSticker.webp", chatId);
-            break;
-        case "Voice":
-            enviarVoice("voice/db.mp3", chatId);
-            break;
-        case "Adios":
-            message.setText("Adios UwU");
-            break;
-        case "Help":
-            message.setText(getInfoComados());
-            break;
-        case "dibujarTexto":
-            dibujarImagenTexto(chatId, restoDelMensaje, 330, 30, 30);
-            break;
-        case "Recordar":
-            System.out.println("xd");
-            String[] partT = restoDelMensaje.split("-");
-            String[] partD = partT[1].split("d ");
-            String[] partH = partD[1].split("h ");
-            String[] partM = partH[1].split("m");
-            System.out.println(partM[0]);
+        if (isReply) {
+            switch (comandoPrincipal) {
+            case "redi":
+                Message mensajeReferenciado = update.getMessage().getReplyToMessage();
+                try {
+                    
+                    String [] part1 = restoDelMensaje.split("w ");
+                    String [] part2 = part1[1].split("h");
+                    int w = Integer.parseInt(part1[0]);
+                    int h = Integer.parseInt(part2[0]);
+                    String doc_id = mensajeReferenciado.getDocument().getFileId();
+                    String doc_name = mensajeReferenciado.getDocument().getFileName();
+                    String doc_mine = mensajeReferenciado.getDocument().getMimeType();
+                    int doc_size = mensajeReferenciado.getDocument().getFileSize();
+                    //String getID = String.valueOf(mensajeReferenciado.getFrom().getId());
 
-            Thread t = new Temporizador(partT[0], Integer.parseInt(partM[0]), Integer.parseInt(partH[0]), Integer.parseInt(partD[0]), this, message, chatId);
-            System.out.println("Es: " + t.toString());
-            message.setText("¡Lo tengo!");
-            t.start();
-            break;
-        default:
-            break;
-        }
+                    Document document = new Document();
+                    document.setMimeType(doc_mine);
+                    document.setFileName(doc_name);
+                    document.setFileSize(doc_size);
+                    document.setFileId(doc_id);
 
-        try {
-            if (!message.getText().isEmpty()) {
-                execute(message);
+                    GetFile getFile = new GetFile();
+                    getFile.setFileId(document.getFileId());
+
+                    org.telegram.telegrambots.meta.api.objects.File TelegramFile = execute(getFile);
+
+                    BufferedImage imBuff = ImageIO.read(downloadFileAsStream(TelegramFile));
+
+                    BufferedImage imagen = Thumbnails.of(imBuff).size(w, h).asBufferedImage();
+
+
+                    InputFile inputFile = new InputFile();
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    ImageIO.write(imagen, "png", os);
+                    InputStream is = new ByteArrayInputStream(os.toByteArray());
+
+                    inputFile.setMedia(is, "ff");
+
+                    SendPhoto sendPhoto = new SendPhoto();
+                    sendPhoto.setPhoto(inputFile);
+                    sendPhoto.setChatId(chatId);
+                    execute(sendPhoto);
+
+                    // downloadFile(TelegramFile, new File(getID + "_" + doc_name));//para guardar
+                    // localmente
+
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+                break;
+
+            default:
+                break;
             }
-        } catch (TelegramApiException ex) {
-            System.out.println(ex);
+        } else {
+            switch (comandoPrincipal) {
+            case "numeroRandom":
+                String[] partsV = restoDelMensaje.split(",");
+                int x1 = Integer.parseInt(partsV[0]);
+                int x2 = Integer.parseInt(partsV[1]);
+                message.setText("" + Sorteador.generarNumeroAleatorio(x1, x2));
+                break;
+            case "elegirEntre":
+                message.setText("Elijo: " + Sorteador.elegirEntre(restoDelMensaje));
+                break;
+            case "mezclar":
+                String mezcla = Sorteador.darFormatoSalidaLista(Sorteador.mezclar(restoDelMensaje));
+                message.setText(mezcla);
+                break;
+            case "repartirEntre":
+                message.setText(Sorteador.repartirEntre(restoDelMensaje));
+                break;
+            case "helloImage":
+                enviarImagenDesdeLocalServer("images/helloWorld.png", chatId);
+                String ruta = getClass().getClassLoader().getResource("helloWorld.png").getPath();
+                System.out.println(ruta);
+                break;
+            case "hello":
+                enviarStickerDesdeLocalServer("stickers/helloSticker.webp", chatId);
+                break;
+            case "voice":
+                enviarVoiceDesdeLocalServer("voice/db.mp3", chatId);
+                break;
+            case "adios":
+                message.setText("Adios UwU");
+                break;
+            case "help":
+                message.setText(getInfoComados());
+                break;
+            case "dibujarTexto":
+                dibujarImagenTexto(chatId, restoDelMensaje, 330, 30, 30);
+                break;
+            case "recordar":
+                System.out.println("xd");
+                String[] partT = restoDelMensaje.split("-");
+                String[] partD = partT[1].split("d ");
+                String[] partH = partD[1].split("h ");
+                String[] partM = partH[1].split("m");
+                System.out.println(partM[0]);
+
+                Thread t = new Temporizador(partT[0], Integer.parseInt(partM[0]), Integer.parseInt(partH[0]),
+                        Integer.parseInt(partD[0]), this, message, chatId);
+                System.out.println("Es: " + t.toString());
+                message.setText("¡Lo tengo!");
+                t.start();
+                break;
+            default:
+                break;
+            }
+
         }
+
+        enviarMensaje(message);
     }
 
     @Override
@@ -131,7 +195,18 @@ public class Bot extends TelegramLongPollingBot {
         return new InputFile(image);
     }
 
-    private void enviarFoto(String rutaImagen, String chatId) {
+    public void enviarDocumentoDesdeTelegramServer(InputFile documento, String chatId) {
+        try {
+            SendDocument sendDocument = new SendDocument();
+            sendDocument.setDocument(documento);
+            sendDocument.setChatId(chatId);
+            execute(sendDocument);
+        } catch (Exception h) {
+            System.out.println(h);
+        }
+    }
+
+    public void enviarImagenDesdeLocalServer(String rutaImagen, String chatId) {
         try {
             SendPhoto sendPhoto = new SendPhoto();
             sendPhoto.setPhoto(getImageAsInpuFile(rutaImagen));
@@ -142,7 +217,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void enviarSticker(String rutaSticker, String chatId) {
+    public void enviarStickerDesdeLocalServer(String rutaSticker, String chatId) {
         try {
             SendSticker sendSticker = new SendSticker();
             sendSticker.setSticker(getImageAsInpuFile(rutaSticker));
@@ -153,7 +228,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void enviarVoice(String rutaAudio, String chatId) {
+    public void enviarVoiceDesdeLocalServer(String rutaAudio, String chatId) {
         try {
             SendVoice sendVoice = new SendVoice();
             sendVoice.setVoice(getImageAsInpuFile(rutaAudio));
@@ -172,7 +247,7 @@ public class Bot extends TelegramLongPollingBot {
         return comandosString;
     }
 
-    private void dibujarImagenTexto(String chatId, String texto, int lineWidth, int x, int y) {
+    public void dibujarImagenTexto(String chatId, String texto, int lineWidth, int x, int y) {
         try {
             BufferedImage imagen = new BufferedImage(400, 400, BufferedImage.TYPE_INT_RGB);
             Graphics2D g2;
@@ -200,6 +275,17 @@ public class Bot extends TelegramLongPollingBot {
             execute(sendPhoto);
         } catch (Exception e) {
             System.out.println(e);
+        }
+
+    }
+
+    public void enviarMensaje(SendMessage message) {
+        try {
+            if (!message.getText().isEmpty()) {
+                execute(message);
+            }
+        } catch (TelegramApiException ex) {
+            System.out.println(ex);
         }
 
     }

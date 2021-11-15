@@ -1,5 +1,4 @@
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class Temporizador extends Thread{
 
@@ -35,12 +34,6 @@ public class Temporizador extends Thread{
         }
         message.setChatId(chatId);
         message.setText(recordatorio);
-        try {
-            if (!message.getText().isEmpty()) {
-                bot.execute(message);
-            }
-        } catch (TelegramApiException ex) {
-            System.out.println(ex);
-        }
+        bot.enviarMensaje(message);
     }
 }
