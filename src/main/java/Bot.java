@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
@@ -65,53 +66,47 @@ public class Bot extends TelegramLongPollingBot {
 
         if (isReply) {
             switch (comandoPrincipal) {
-            case "redi":
-                Message mensajeReferenciado = update.getMessage().getReplyToMessage();
+            case "resize":
                 try {
+                    Message mensajeReferenciado = update.getMessage().getReplyToMessage();
+                    String[] part = restoDelMensaje.split(" ");
+                    int w = Integer.parseInt(part[0]);
+                    int h = Integer.parseInt(part[1]);
+
+                    if (mensajeReferenciado.hasDocument()) {
+                        String doc_name = mensajeReferenciado.getDocument().getFileName();
+
+                        Document document = mensajeReferenciado.getDocument();
+                        
+    
+                        GetFile getFile = new GetFile();
+                        getFile.setFileId(document.getFileId());
+    
+                        org.telegram.telegrambots.meta.api.objects.File TelegramFile = execute(getFile);
+    
+                        BufferedImage imBuff = ImageIO.read(downloadFileAsStream(TelegramFile));
+    
+                        BufferedImage imagen = Thumbnails.of(imBuff).size(w, h).asBufferedImage();
+    
+                        InputFile inputFile = new InputFile();
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        ImageIO.write(imagen, "png", os);
+                        InputStream is = new ByteArrayInputStream(os.toByteArray());
+    
+                        inputFile.setMedia(is, doc_name);
+    
+                        enviarDocumentoEnMemoria(inputFile, chatId);
+                    } else {
+                        message.setText("Seria mejor si la imagen esta enviada como archivo.");
+                    }
                     
-                    String [] part1 = restoDelMensaje.split("w ");
-                    String [] part2 = part1[1].split("h");
-                    int w = Integer.parseInt(part1[0]);
-                    int h = Integer.parseInt(part2[0]);
-                    String doc_id = mensajeReferenciado.getDocument().getFileId();
-                    String doc_name = mensajeReferenciado.getDocument().getFileName();
-                    String doc_mine = mensajeReferenciado.getDocument().getMimeType();
-                    int doc_size = mensajeReferenciado.getDocument().getFileSize();
-                    //String getID = String.valueOf(mensajeReferenciado.getFrom().getId());
 
-                    Document document = new Document();
-                    document.setMimeType(doc_mine);
-                    document.setFileName(doc_name);
-                    document.setFileSize(doc_size);
-                    document.setFileId(doc_id);
-
-                    GetFile getFile = new GetFile();
-                    getFile.setFileId(document.getFileId());
-
-                    org.telegram.telegrambots.meta.api.objects.File TelegramFile = execute(getFile);
-
-                    BufferedImage imBuff = ImageIO.read(downloadFileAsStream(TelegramFile));
-
-                    BufferedImage imagen = Thumbnails.of(imBuff).size(w, h).asBufferedImage();
-
-
-                    InputFile inputFile = new InputFile();
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    ImageIO.write(imagen, "png", os);
-                    InputStream is = new ByteArrayInputStream(os.toByteArray());
-
-                    inputFile.setMedia(is, "ff");
-
-                    SendPhoto sendPhoto = new SendPhoto();
-                    sendPhoto.setPhoto(inputFile);
-                    sendPhoto.setChatId(chatId);
-                    execute(sendPhoto);
-
-                    // downloadFile(TelegramFile, new File(getID + "_" + doc_name));//para guardar
-                    // localmente
+                    // downloadFile(TelegramFile, new File(getID + "_" + doc_name));
+                    // para guardar localmente
 
                 } catch (Exception e) {
                     System.out.println(e);
+                    message.setText("¡Ops! Algo salió mal.");
                 }
                 break;
 
@@ -120,8 +115,8 @@ public class Bot extends TelegramLongPollingBot {
             }
         } else {
             switch (comandoPrincipal) {
-            case "numeroRandom":
-                String[] partsV = restoDelMensaje.split(",");
+            case "numRand":
+                String[] partsV = restoDelMensaje.split(" ");
                 int x1 = Integer.parseInt(partsV[0]);
                 int x2 = Integer.parseInt(partsV[1]);
                 message.setText("" + Sorteador.generarNumeroAleatorio(x1, x2));
@@ -157,16 +152,18 @@ public class Bot extends TelegramLongPollingBot {
                 dibujarImagenTexto(chatId, restoDelMensaje, 330, 30, 30);
                 break;
             case "recordar":
-                System.out.println("xd");
-                String[] partT = restoDelMensaje.split("-");
+                String[] partT = restoDelMensaje.split(" - ");
                 String[] partD = partT[1].split("d ");
                 String[] partH = partD[1].split("h ");
                 String[] partM = partH[1].split("m");
-                System.out.println(partM[0]);
 
                 Thread t = new Temporizador(partT[0], Integer.parseInt(partM[0]), Integer.parseInt(partH[0]),
                         Integer.parseInt(partD[0]), this, message, chatId);
-                System.out.println("Es: " + t.toString());
+                try {
+                    System.out.println("Los hilos activos son: " + Thread.currentThread().activeCount());
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
                 message.setText("¡Lo tengo!");
                 t.start();
                 break;
@@ -193,6 +190,29 @@ public class Bot extends TelegramLongPollingBot {
             System.out.println("Error al acceder a la imagen:");
         }
         return new InputFile(image);
+    }
+
+
+    public void enviarDocumentoEnMemoria(InputFile documento, String chatId) {
+        try {
+            SendDocument sendDocument = new SendDocument();
+            sendDocument.setDocument(documento);
+            sendDocument.setChatId(chatId);
+            execute(sendDocument);
+        } catch (Exception h) {
+            System.out.println(h);
+        }
+    }
+
+    public void enviarImagenEnMemoria(InputFile imagen, String chatId) {
+        try {
+            SendPhoto sendPhoto = new SendPhoto();
+            sendPhoto.setPhoto(imagen);
+            sendPhoto.setChatId(chatId);
+            execute(sendPhoto);
+        } catch (Exception h) {
+            System.out.println(h);
+        }
     }
 
     public void enviarDocumentoDesdeTelegramServer(InputFile documento, String chatId) {

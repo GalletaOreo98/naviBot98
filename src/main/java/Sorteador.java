@@ -9,13 +9,13 @@ public class Sorteador {
     }
 
     public static String elegirEntre(String sujetos) {
-        ArrayList<String> parts = new ArrayList<>(Arrays.asList(sujetos.split(",")));
+        ArrayList<String> parts = new ArrayList<>(Arrays.asList(sujetos.split(", ")));
         int numeroAleatorio = (int) (Math.random() * (parts.size()) + 0);
         return parts.get(numeroAleatorio);
     }
 
     public static ArrayList<String> mezclar(String sujetos) {
-        ArrayList<String> parts = new ArrayList<>(Arrays.asList(sujetos.split(",")));
+        ArrayList<String> parts = new ArrayList<>(Arrays.asList(sujetos.split(", ")));
         for(int i=0; i<parts.size(); i++){
             int temp1, temp2;
             String tempS1, tempS2;
