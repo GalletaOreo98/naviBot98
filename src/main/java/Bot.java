@@ -72,40 +72,42 @@ public class Bot extends TelegramLongPollingBot {
                     String[] part = restoDelMensaje.split(" ");
                     int w = Integer.parseInt(part[0]);
                     int h = Integer.parseInt(part[1]);
-
                     if (mensajeReferenciado.hasDocument()) {
                         String doc_name = mensajeReferenciado.getDocument().getFileName();
 
                         Document document = mensajeReferenciado.getDocument();
-                        
-    
+
                         GetFile getFile = new GetFile();
                         getFile.setFileId(document.getFileId());
-    
+
                         org.telegram.telegrambots.meta.api.objects.File TelegramFile = execute(getFile);
-    
+
                         BufferedImage imBuff = ImageIO.read(downloadFileAsStream(TelegramFile));
-    
-                        BufferedImage imagen = Thumbnails.of(imBuff).size(w, h).asBufferedImage();
-    
-                        InputFile inputFile = new InputFile();
-                        ByteArrayOutputStream os = new ByteArrayOutputStream();
-                        ImageIO.write(imagen, "png", os);
-                        InputStream is = new ByteArrayInputStream(os.toByteArray());
-    
-                        inputFile.setMedia(is, doc_name);
-    
-                        enviarDocumentoEnMemoria(inputFile, chatId);
+                        if (imBuff != null) {
+                            BufferedImage imagen = Thumbnails.of(imBuff).size(w, h).asBufferedImage();
+                            InputFile inputFile = new InputFile();
+                            ByteArrayOutputStream os = new ByteArrayOutputStream();
+                            ImageIO.write(imagen, "png", os);
+                            InputStream is = new ByteArrayInputStream(os.toByteArray());
+                            inputFile.setMedia(is, doc_name);
+                            enviarDocumento(inputFile, chatId);
+                        } else {
+                            message.setText("No creo poder cambiar las dimeciones de eso, intenta con una imagen.");
+                        }
+
                     } else {
-                        message.setText("Seria mejor si la imagen esta enviada como archivo.");
+                        if (mensajeReferenciado.getPhoto() != null) {
+                            message.setText("Seria mejor si la imagen esta enviada como archivo.");
+                        }else{
+                            message.setText("Supongo que es una broma.");
+                        }
                     }
-                    
 
                     // downloadFile(TelegramFile, new File(getID + "_" + doc_name));
                     // para guardar localmente
 
                 } catch (Exception e) {
-                    System.out.println(e);
+                    System.out.println(e.getMessage());
                     message.setText("¡Ops! Algo salió mal.");
                 }
                 break;
@@ -160,7 +162,8 @@ public class Bot extends TelegramLongPollingBot {
                 Thread t = new Temporizador(partT[0], Integer.parseInt(partM[0]), Integer.parseInt(partH[0]),
                         Integer.parseInt(partD[0]), this, message, chatId);
                 try {
-                    System.out.println("Los hilos activos son: " + Thread.currentThread().activeCount());
+                    Thread.currentThread();
+                    System.out.println("Los hilos activos son: " + Thread.activeCount());
                 } catch (Exception e) {
                     System.out.println(e);
                 }
@@ -192,35 +195,23 @@ public class Bot extends TelegramLongPollingBot {
         return new InputFile(image);
     }
 
-
-    public void enviarDocumentoEnMemoria(InputFile documento, String chatId) {
+    public void enviarDocumento(InputFile documento, String chatId) {
         try {
             SendDocument sendDocument = new SendDocument();
             sendDocument.setDocument(documento);
             sendDocument.setChatId(chatId);
             execute(sendDocument);
         } catch (Exception h) {
-            System.out.println(h);
+            System.out.println("Error al enviar documento: " + h);
         }
     }
 
-    public void enviarImagenEnMemoria(InputFile imagen, String chatId) {
+    public void enviarImagen(InputFile imagen, String chatId) {
         try {
             SendPhoto sendPhoto = new SendPhoto();
             sendPhoto.setPhoto(imagen);
             sendPhoto.setChatId(chatId);
             execute(sendPhoto);
-        } catch (Exception h) {
-            System.out.println(h);
-        }
-    }
-
-    public void enviarDocumentoDesdeTelegramServer(InputFile documento, String chatId) {
-        try {
-            SendDocument sendDocument = new SendDocument();
-            sendDocument.setDocument(documento);
-            sendDocument.setChatId(chatId);
-            execute(sendDocument);
         } catch (Exception h) {
             System.out.println(h);
         }
