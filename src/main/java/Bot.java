@@ -14,7 +14,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
 import java.io.*;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.coobird.thumbnailator.Thumbnails;
-
 import java.awt.image.BufferedImage;
 import java.awt.*;
 import javax.imageio.ImageIO;
@@ -98,7 +97,7 @@ public class Bot extends TelegramLongPollingBot {
                     } else {
                         if (mensajeReferenciado.getPhoto() != null) {
                             message.setText("Seria mejor si la imagen esta enviada como archivo.");
-                        }else{
+                        } else {
                             message.setText("Supongo que es una broma.");
                         }
                     }
@@ -111,7 +110,12 @@ public class Bot extends TelegramLongPollingBot {
                     message.setText("¡Ops! Algo salió mal.");
                 }
                 break;
-
+            case "enmarcar":
+                    enviarMensaje(new SendMessage(chatId, "¡Trabajando!"));
+                    Message mensajeReferenciado = update.getMessage().getReplyToMessage();
+                    Thread trabajdaorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId);
+                    trabajdaorDeImagen.start();
+                break;
             default:
                 break;
             }

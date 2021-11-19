@@ -2,7 +2,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 public class Temporizador extends Thread{
 
-    String recordatorio="No sé";
+    String recordatorio="";
     int minutos = 0;
     int horas = 0;
     int dias = 0;
