@@ -16,5 +16,6 @@ public class IniciadorRecursos {
         for (int i = 0; i < arrayPalabras.size(); i++) {
             System.out.println(((Palabra) arrayPalabras.get(i)).getPalabra());
         }*/
+        
     }
 }

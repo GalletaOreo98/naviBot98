@@ -68,6 +68,7 @@ public class Bot extends TelegramLongPollingBot {
 
         if (isReply) {
             switch (comandoPrincipal) {
+                case "rz":
                 case "resize":
                     try {
                         Message mensajeReferenciado = update.getMessage().getReplyToMessage();

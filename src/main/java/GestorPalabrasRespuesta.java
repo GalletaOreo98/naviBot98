@@ -57,7 +57,6 @@ public class GestorPalabrasRespuesta {
             for (int i = 0; i < arrayPalabrasSeleccionadas.size(); i++) {
                 if (arrayPalabrasSeleccionadas.get(i).getFrecuencia() == frecuenciaAleatoria) {
                     arrayPalabrasFrecuencia.add(arrayPalabrasSeleccionadas.get(i).getPalabra());
-                    System.out.println(arrayPalabrasSeleccionadas.get(i).getPalabra());
                 }
             }
 
