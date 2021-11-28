@@ -6,12 +6,12 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
 import java.io.*;
+import java.util.ArrayList;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.coobird.thumbnailator.Thumbnails;
 import java.awt.image.BufferedImage;
@@ -20,12 +20,13 @@ import javax.imageio.ImageIO;
 
 public class Bot extends TelegramLongPollingBot {
 
-    private String[] comandosInfo = { "numeroRandom n1,n2\nDevuelve un numero aleatorio entre x1 y x2",
-            "elegirEntre e1,e2,e3,...en\nElije un elemento entre la lista de elementos que se proporcione",
-            "mezclar e1,e2,e3,...en\nMezcla aleatoriamente los elementos de la lista proporcionada y la devuelve",
-            "repartirEntre s1,s2,s3,...sn-e1,e2,e3,...en\nReparte entre los n sujetos los n elementos de manera igualitaria y aleatoria y devuelve la lista",
+    private String[] comandosInfo = { "numRand n1 n2\nDevuelve un numero aleatorio entre x1 y x2",
+            "elegirEntre e1, e2, e3,...en\nElije un elemento entre la lista de elementos que se proporcione",
+            "mezclar e1, e2, e3,...en\nMezcla aleatoriamente los elementos de la lista proporcionada y la devuelve",
+            "repartirEntre s1, s2, s3,...sn - e1, e2, e3,...en\nReparte entre los n sujetos los n elementos de manera igualitaria y aleatoria y devuelve la lista",
             "HelloImage\nDevuelve una imagen", "Hello\nDevuelve un sticker", "Voice\nDevuelve un Audio de voz",
             "Adios\nDevuelve una despedida" };
+    ArrayList<Palabra> arrayPalabras = GestorPalabrasRespuesta.getPalabrasEnData();
 
     // En la carpeta raiz se agrega un file .env para acceder a claves como
     // bot_token con dotenv class
@@ -60,122 +61,116 @@ public class Bot extends TelegramLongPollingBot {
             restoDelMensaje = partesDelComando[1];
         }
 
+        comandoPrincipal = comandoPrincipal.toLowerCase();
+
         String chatId = String.valueOf(update.getMessage().getChatId());
         message.setChatId(chatId);
 
         if (isReply) {
             switch (comandoPrincipal) {
-            case "resize":
-                try {
-                    Message mensajeReferenciado = update.getMessage().getReplyToMessage();
-                    String[] part = restoDelMensaje.split(" ");
-                    int w = Integer.parseInt(part[0]);
-                    int h = Integer.parseInt(part[1]);
-                    if (mensajeReferenciado.hasDocument()) {
-                        String doc_name = mensajeReferenciado.getDocument().getFileName();
+                case "resize":
+                    try {
+                        Message mensajeReferenciado = update.getMessage().getReplyToMessage();
+                        String[] part = restoDelMensaje.split(" ");
+                        int w = Integer.parseInt(part[0]);
+                        int h = Integer.parseInt(part[1]);
+                        if (mensajeReferenciado.hasDocument()) {
+                            String doc_name = mensajeReferenciado.getDocument().getFileName();
 
-                        Document document = mensajeReferenciado.getDocument();
+                            Document document = mensajeReferenciado.getDocument();
 
-                        GetFile getFile = new GetFile();
-                        getFile.setFileId(document.getFileId());
+                            GetFile getFile = new GetFile();
+                            getFile.setFileId(document.getFileId());
 
-                        org.telegram.telegrambots.meta.api.objects.File TelegramFile = execute(getFile);
+                            org.telegram.telegrambots.meta.api.objects.File TelegramFile = execute(getFile);
 
-                        BufferedImage imBuff = ImageIO.read(downloadFileAsStream(TelegramFile));
-                        if (imBuff != null) {
-                            BufferedImage imagen = Thumbnails.of(imBuff).size(w, h).asBufferedImage();
-                            InputFile inputFile = new InputFile();
-                            ByteArrayOutputStream os = new ByteArrayOutputStream();
-                            ImageIO.write(imagen, "png", os);
-                            InputStream is = new ByteArrayInputStream(os.toByteArray());
-                            inputFile.setMedia(is, doc_name);
-                            enviarDocumento(inputFile, chatId);
+                            BufferedImage imBuff = ImageIO.read(downloadFileAsStream(TelegramFile));
+                            if (imBuff != null) {
+                                BufferedImage imagen = Thumbnails.of(imBuff).size(w, h).asBufferedImage();
+                                InputFile inputFile = new InputFile();
+                                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                                ImageIO.write(imagen, "png", os);
+                                InputStream is = new ByteArrayInputStream(os.toByteArray());
+                                inputFile.setMedia(is, doc_name);
+                                enviarDocumento(inputFile, chatId);
+                            } else {
+                                message.setText("No creo poder cambiar las dimeciones de eso, intenta con una imagen.");
+                            }
+
                         } else {
-                            message.setText("No creo poder cambiar las dimeciones de eso, intenta con una imagen.");
+                            if (mensajeReferenciado.getPhoto() != null) {
+                                message.setText("Seria mejor si la imagen esta enviada como archivo.");
+                            } else {
+                                message.setText("Supongo que es una broma.");
+                            }
                         }
 
-                    } else {
-                        if (mensajeReferenciado.getPhoto() != null) {
-                            message.setText("Seria mejor si la imagen esta enviada como archivo.");
-                        } else {
-                            message.setText("Supongo que es una broma.");
-                        }
+                        // downloadFile(TelegramFile, new File(getID + "_" + doc_name));
+                        // para guardar localmente
+
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        message.setText("¡Ops! Algo salió mal.");
                     }
-
-                    // downloadFile(TelegramFile, new File(getID + "_" + doc_name));
-                    // para guardar localmente
-
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                    message.setText("¡Ops! Algo salió mal.");
-                }
-                break;
-            case "enmarcar":
+                    break;
+                case "enmarcar":
                     enviarMensaje(new SendMessage(chatId, "¡Trabajando!"));
                     Message mensajeReferenciado = update.getMessage().getReplyToMessage();
                     Thread trabajdaorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId);
                     trabajdaorDeImagen.start();
-                break;
-            default:
-                break;
+                    break;
+                default:
+                    break;
             }
         } else {
             switch (comandoPrincipal) {
-            case "numRand":
-                String[] partsV = restoDelMensaje.split(" ");
-                int x1 = Integer.parseInt(partsV[0]);
-                int x2 = Integer.parseInt(partsV[1]);
-                message.setText("" + Sorteador.generarNumeroAleatorio(x1, x2));
-                break;
-            case "elegirEntre":
-                message.setText("Elijo: " + Sorteador.elegirEntre(restoDelMensaje));
-                break;
-            case "mezclar":
-                String mezcla = Sorteador.darFormatoSalidaLista(Sorteador.mezclar(restoDelMensaje));
-                message.setText(mezcla);
-                break;
-            case "repartirEntre":
-                message.setText(Sorteador.repartirEntre(restoDelMensaje));
-                break;
-            case "helloImage":
-                enviarImagenDesdeLocalServer("images/helloWorld.png", chatId);
-                String ruta = getClass().getClassLoader().getResource("helloWorld.png").getPath();
-                System.out.println(ruta);
-                break;
-            case "hello":
-                enviarStickerDesdeLocalServer("stickers/helloSticker.webp", chatId);
-                break;
-            case "voice":
-                enviarVoiceDesdeLocalServer("voice/db.mp3", chatId);
-                break;
-            case "adios":
-                message.setText("Adios UwU");
-                break;
-            case "help":
-                message.setText(getInfoComados());
-                break;
-            case "dibujarTexto":
-                dibujarImagenTexto(chatId, restoDelMensaje, 330, 30, 30);
-                break;
-            case "recordar":
-                String[] partT = restoDelMensaje.split(" - ");
-                String[] partD = partT[1].split("d ");
-                String[] partH = partD[1].split("h ");
-                String[] partM = partH[1].split("m");
+                case "nr":
+                case "numrand":
+                    String[] partsV = restoDelMensaje.split(" ");
+                    int x1 = Integer.parseInt(partsV[0]);
+                    int x2 = Integer.parseInt(partsV[1]);
+                    message.setText("" + Sorteador.generarNumeroAleatorio(x1, x2));
+                    break;
+                case "ee":
+                case "elegirentre":
+                    message.setText("Elijo: " + Sorteador.elegirEntre(restoDelMensaje));
+                    break;
+                case "mz":
+                case "mezclar":
+                    String mezcla = Sorteador.darFormatoSalidaLista(Sorteador.mezclar(restoDelMensaje));
+                    message.setText(mezcla);
+                    break;
+                case "re":
+                case "repartirentre":
+                    message.setText(Sorteador.repartirEntre(restoDelMensaje));
+                    break;
+                case "voice":
+                    enviarVoiceDesdeLocalServer("voice/db.mp3", chatId);
+                    break;
+                case "help":
+                    message.setText(getInfoComados());
+                    break;
+                case "dibujartexto":
+                    dibujarImagenTexto(chatId, restoDelMensaje, 330, 30, 30);
+                    break;
+                case "temporizador":
+                case "temp":
+                case "recordar":
+                    String[] partT = restoDelMensaje.split(" - ");
+                    String[] partD = partT[1].split("d ");
+                    String[] partH = partD[1].split("h ");
+                    String[] partM = partH[1].split("m");
 
-                Thread t = new Temporizador(partT[0], Integer.parseInt(partM[0]), Integer.parseInt(partH[0]),
-                        Integer.parseInt(partD[0]), this, message, chatId);
-                try {
+                    Thread t = new Temporizador(partT[0], Integer.parseInt(partM[0]), Integer.parseInt(partH[0]),
+                            Integer.parseInt(partD[0]), this, message, chatId);
                     Thread.currentThread();
                     System.out.println("Los hilos activos son: " + Thread.activeCount());
-                } catch (Exception e) {
-                    System.out.println(e);
-                }
-                message.setText("¡Lo tengo!");
-                t.start();
-                break;
-            default:
-                break;
+                    message.setText("¡Lo tengo!");
+                    t.start();
+                    break;
+                default:
+                    String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras, comandoPrincipal);
+                    message.setText(GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras, etiqueta));
             }
 
         }
