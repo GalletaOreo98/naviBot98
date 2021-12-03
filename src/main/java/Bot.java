@@ -3,17 +3,16 @@ import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import io.github.cdimascio.dotenv.Dotenv;
-import net.coobird.thumbnailator.Thumbnails;
 import java.awt.image.BufferedImage;
 import java.awt.*;
 import javax.imageio.ImageIO;
@@ -67,62 +66,11 @@ public class Bot extends TelegramLongPollingBot {
         message.setChatId(chatId);
 
         if (isReply) {
-            switch (comandoPrincipal) {
-                case "rz":
-                case "resize":
-                    try {
-                        Message mensajeReferenciado = update.getMessage().getReplyToMessage();
-                        String[] part = restoDelMensaje.split(" ");
-                        int w = Integer.parseInt(part[0]);
-                        int h = Integer.parseInt(part[1]);
-                        if (mensajeReferenciado.hasDocument()) {
-                            String doc_name = mensajeReferenciado.getDocument().getFileName();
-
-                            Document document = mensajeReferenciado.getDocument();
-
-                            GetFile getFile = new GetFile();
-                            getFile.setFileId(document.getFileId());
-
-                            org.telegram.telegrambots.meta.api.objects.File TelegramFile = execute(getFile);
-
-                            BufferedImage imBuff = ImageIO.read(downloadFileAsStream(TelegramFile));
-                            if (imBuff != null) {
-                                BufferedImage imagen = Thumbnails.of(imBuff).size(w, h).asBufferedImage();
-                                InputFile inputFile = new InputFile();
-                                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                                ImageIO.write(imagen, "png", os);
-                                InputStream is = new ByteArrayInputStream(os.toByteArray());
-                                inputFile.setMedia(is, doc_name);
-                                enviarDocumento(inputFile, chatId);
-                            } else {
-                                message.setText("No creo poder cambiar las dimeciones de eso, intenta con una imagen.");
-                            }
-
-                        } else {
-                            if (mensajeReferenciado.getPhoto() != null) {
-                                message.setText("Seria mejor si la imagen esta enviada como archivo.");
-                            } else {
-                                message.setText("Supongo que es una broma.");
-                            }
-                        }
-
-                        // downloadFile(TelegramFile, new File(getID + "_" + doc_name));
-                        // para guardar localmente
-
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                        message.setText("¡Ops! Algo salió mal.");
-                    }
-                    break;
-                case "enmarcar":
-                    enviarMensaje(new SendMessage(chatId, "¡Trabajando!"));
-                    Message mensajeReferenciado = update.getMessage().getReplyToMessage();
-                    Thread trabajdaorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId);
-                    trabajdaorDeImagen.start();
-                    break;
-                default:
-                    break;
-            }
+            enviarMensaje(new SendMessage(chatId, "¡Trabajando!"));
+            Message mensajeReferenciado = update.getMessage().getReplyToMessage();
+            Thread trabajdaorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId,
+                    command.toLowerCase());
+            trabajdaorDeImagen.start();
         } else {
             switch (comandoPrincipal) {
                 case "nr":
@@ -169,9 +117,69 @@ public class Bot extends TelegramLongPollingBot {
                     message.setText("¡Lo tengo!");
                     t.start();
                     break;
+                case "ppt":
+                case "jugar":
+                    int eleccionUsuario = 0; // piedra = 1, papel = 2, tijera = 3
+                    ArrayList<String> piedra = new ArrayList<>(
+                            Arrays.asList("👊", "👊🏻", "👊🏼", "👊🏽", "👊🏾", "👊🏿"));
+                    ArrayList<String> papel = new ArrayList<>(Arrays.asList("✋", "✋🏻", "✋🏼", "✋🏽", "✋🏾", "✋🏿"));
+                    ArrayList<String> tijera = new ArrayList<>(Arrays.asList("✌️", "✌🏻", "✌🏼", "✌🏽", "✌🏾", "✌🏿"));
+
+                    if (piedra.contains(restoDelMensaje) || restoDelMensaje.toLowerCase().equals("piedra")) {
+                        eleccionUsuario = 1;
+                    } else {
+                        if (papel.contains(restoDelMensaje) || restoDelMensaje.toLowerCase().equals("papel")) {
+                            eleccionUsuario = 2;
+                        } else {
+                            if (tijera.contains(restoDelMensaje) || restoDelMensaje.toLowerCase().equals("tijera")) {
+                                eleccionUsuario = 3;
+                            }
+                        }
+                    }
+                    int eleccionBot = Sorteador.generarNumeroAleatorio(1, 3);
+                    String emoticonEleccionBot=new String();
+                    switch (eleccionBot) {
+                        case 1:
+                        emoticonEleccionBot="👊🏼";
+                            break;
+                            case 2:
+                            emoticonEleccionBot="✋🏼";
+                            break;
+                            case 3:
+                            emoticonEleccionBot="✌🏼";
+                            break;
+                        default:
+                            break;
+                    }
+                    if (eleccionBot == eleccionUsuario) {
+                        enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                        enviarMensaje(new SendMessage(chatId, "Hemos elegido lo mismo. ^^"));
+                    } else {
+                        if (eleccionUsuario == 1 && eleccionBot == 2) {
+                            enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                            enviarMensaje(new SendMessage(chatId, "Es hora de documentar tu derrota. ^^"));
+                        } else {
+                            if (eleccionUsuario == 2 && eleccionBot == 3) {
+                                enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                                enviarMensaje(new SendMessage(chatId,
+                                        "A que he cortado tu racha, espera... ¿Siquiera tenias una?"));
+                            } else {
+                                if (eleccionUsuario == 3 && eleccionBot == 1) {
+                                    enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                                    enviarMensaje(new SendMessage(chatId, "Una dura derrota ¿no? ^^"));
+                                } else {
+                                    enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                                    enviarMensaje(new SendMessage(chatId, "Tu ganas."));
+                                }
+                            }
+                        }
+                    }
+
                 default:
-                    String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras, comandoPrincipal);
-                    message.setText(GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras, etiqueta));
+                    // String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras,
+                    // comandoPrincipal);
+                    // message.setText(GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras,
+                    // etiqueta));
             }
 
         }
@@ -195,15 +203,11 @@ public class Bot extends TelegramLongPollingBot {
         return new InputFile(image);
     }
 
-    public void enviarDocumento(InputFile documento, String chatId) {
-        try {
-            SendDocument sendDocument = new SendDocument();
-            sendDocument.setDocument(documento);
-            sendDocument.setChatId(chatId);
-            execute(sendDocument);
-        } catch (Exception h) {
-            System.out.println("Error al enviar documento: " + h);
-        }
+    public void enviarDocumento(InputFile documento, String chatId) throws Exception {
+        SendDocument sendDocument = new SendDocument();
+        sendDocument.setDocument(documento);
+        sendDocument.setChatId(chatId);
+        execute(sendDocument);
     }
 
     public void enviarImagen(InputFile imagen, String chatId) {
