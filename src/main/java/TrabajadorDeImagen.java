@@ -38,10 +38,11 @@ public class TrabajadorDeImagen extends Thread {
         switch (comandoPrincipal) {
             case "rz":
             case "resize":
-            System.out.println(restoDelComando);
+                bot.enviarMensaje(new SendMessage(chatId, "¡Trabajando reescalado de imagen!"));
                 resizeImagen(restoDelComando);
                 break;
             case "enmarcar":
+                bot.enviarMensaje(new SendMessage(chatId, "¡Trabajando enmarcado!"));
                 enmarcarImagen();
             default:
                 break;

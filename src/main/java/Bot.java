@@ -66,7 +66,6 @@ public class Bot extends TelegramLongPollingBot {
         message.setChatId(chatId);
 
         if (isReply) {
-            enviarMensaje(new SendMessage(chatId, "¡Trabajando!"));
             Message mensajeReferenciado = update.getMessage().getReplyToMessage();
             Thread trabajdaorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId,
                     command.toLowerCase());
@@ -120,55 +119,52 @@ public class Bot extends TelegramLongPollingBot {
                 case "ppt":
                 case "jugar":
                     int eleccionUsuario = 0; // piedra = 1, papel = 2, tijera = 3
-                    ArrayList<String> piedra = new ArrayList<>(
-                            Arrays.asList("👊", "👊🏻", "👊🏼", "👊🏽", "👊🏾", "👊🏿"));
-                    ArrayList<String> papel = new ArrayList<>(Arrays.asList("✋", "✋🏻", "✋🏼", "✋🏽", "✋🏾", "✋🏿"));
-                    ArrayList<String> tijera = new ArrayList<>(Arrays.asList("✌️", "✌🏻", "✌🏼", "✌🏽", "✌🏾", "✌🏿"));
 
-                    if (piedra.contains(restoDelMensaje) || restoDelMensaje.toLowerCase().equals("piedra")) {
+                    if (restoDelMensaje.toLowerCase().equals("piedra")) {
                         eleccionUsuario = 1;
                     } else {
-                        if (papel.contains(restoDelMensaje) || restoDelMensaje.toLowerCase().equals("papel")) {
+                        if (restoDelMensaje.toLowerCase().equals("papel")) {
                             eleccionUsuario = 2;
                         } else {
-                            if (tijera.contains(restoDelMensaje) || restoDelMensaje.toLowerCase().equals("tijera")) {
+                            if (restoDelMensaje.toLowerCase().equals("tijera")
+                                    || restoDelMensaje.toLowerCase().equals("tijeras")) {
                                 eleccionUsuario = 3;
                             }
                         }
                     }
                     int eleccionBot = Sorteador.generarNumeroAleatorio(1, 3);
-                    String emoticonEleccionBot=new String();
+                    String emoticonEleccionBot = new String();
                     switch (eleccionBot) {
                         case 1:
-                        emoticonEleccionBot="👊🏼";
+                            emoticonEleccionBot = "👊🏼";
                             break;
-                            case 2:
-                            emoticonEleccionBot="✋🏼";
+                        case 2:
+                            emoticonEleccionBot = "✋🏼";
                             break;
-                            case 3:
-                            emoticonEleccionBot="✌🏼";
+                        case 3:
+                            emoticonEleccionBot = "✌🏼";
                             break;
                         default:
                             break;
                     }
                     if (eleccionBot == eleccionUsuario) {
-                        enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                        enviarMensaje(new SendMessage(chatId, "Elijo: " + emoticonEleccionBot));
                         enviarMensaje(new SendMessage(chatId, "Hemos elegido lo mismo. ^^"));
                     } else {
                         if (eleccionUsuario == 1 && eleccionBot == 2) {
-                            enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                            enviarMensaje(new SendMessage(chatId, "Elijo: " + emoticonEleccionBot));
                             enviarMensaje(new SendMessage(chatId, "Es hora de documentar tu derrota. ^^"));
                         } else {
                             if (eleccionUsuario == 2 && eleccionBot == 3) {
-                                enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                                enviarMensaje(new SendMessage(chatId, "Elijo: " + emoticonEleccionBot));
                                 enviarMensaje(new SendMessage(chatId,
                                         "A que he cortado tu racha, espera... ¿Siquiera tenias una?"));
                             } else {
                                 if (eleccionUsuario == 3 && eleccionBot == 1) {
-                                    enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                                    enviarMensaje(new SendMessage(chatId, "Elijo: " + emoticonEleccionBot));
                                     enviarMensaje(new SendMessage(chatId, "Una dura derrota ¿no? ^^"));
                                 } else {
-                                    enviarMensaje(new SendMessage(chatId, "Elijo: "+ emoticonEleccionBot));
+                                    enviarMensaje(new SendMessage(chatId, "Elijo: " + emoticonEleccionBot));
                                     enviarMensaje(new SendMessage(chatId, "Tu ganas."));
                                 }
                             }
