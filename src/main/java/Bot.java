@@ -164,8 +164,18 @@ public class Bot extends TelegramLongPollingBot {
                                     enviarMensaje(new SendMessage(chatId, "Elijo: " + emoticonEleccionBot));
                                     enviarMensaje(new SendMessage(chatId, "Una dura derrota ¿no? ^^"));
                                 } else {
-                                    enviarMensaje(new SendMessage(chatId, "Elijo: " + emoticonEleccionBot));
-                                    enviarMensaje(new SendMessage(chatId, "Tu ganas."));
+                                    if (eleccionUsuario < 1 || eleccionUsuario > 3) {
+                                        String respuestaAleatoria = "";
+                                        for (int i = 0; i < 10; i++) {
+                                            respuestaAleatoria += "" + Sorteador.generarNumeroAleatorio(0, 1);
+                                        }
+                                        enviarMensaje(new SendMessage(chatId,
+                                                "No entiendo tu elección, así que también te daré algo lo cual no puedas entender: "
+                                                        + respuestaAleatoria));
+                                    } else {
+                                        enviarMensaje(new SendMessage(chatId, "Elijo: " + emoticonEleccionBot));
+                                        enviarMensaje(new SendMessage(chatId, "Tu ganas."));
+                                    }
                                 }
                             }
                         }
