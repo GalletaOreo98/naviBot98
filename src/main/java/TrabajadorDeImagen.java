@@ -104,7 +104,6 @@ public class TrabajadorDeImagen extends Thread {
 
         } catch (Exception e) {
             System.out.println("Algo muy inesperado " + e.getMessage());
-            bot.enviarMensaje(new SendMessage(chatId, "¡Ops! Algo salio mal."));
         }
     }
 
