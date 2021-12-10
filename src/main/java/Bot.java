@@ -19,12 +19,6 @@ import javax.imageio.ImageIO;
 
 public class Bot extends TelegramLongPollingBot {
 
-    private String[] comandosInfo = { "numRand n1 n2\nDevuelve un numero aleatorio entre x1 y x2",
-            "elegirEntre e1, e2, e3,...en\nElije un elemento entre la lista de elementos que se proporcione",
-            "mezclar e1, e2, e3,...en\nMezcla aleatoriamente los elementos de la lista proporcionada y la devuelve",
-            "repartirEntre s1, s2, s3,...sn - e1, e2, e3,...en\nReparte entre los n sujetos los n elementos de manera igualitaria y aleatoria y devuelve la lista",
-            "HelloImage\nDevuelve una imagen", "Hello\nDevuelve un sticker", "Voice\nDevuelve un Audio de voz",
-            "Adios\nDevuelve una despedida" };
     ArrayList<Palabra> arrayPalabras = GestorPalabrasRespuesta.getPalabrasEnData();
 
     // En la carpeta raiz se agrega un file .env para acceder a claves como
@@ -67,9 +61,9 @@ public class Bot extends TelegramLongPollingBot {
 
         if (isReply) {
             Message mensajeReferenciado = update.getMessage().getReplyToMessage();
-            Thread trabajdaorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId,
+            Thread trabajadorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId,
                     command.toLowerCase());
-            trabajdaorDeImagen.start();
+            trabajadorDeImagen.start();
         } else {
             switch (comandoPrincipal) {
                 case "nr":
@@ -92,11 +86,12 @@ public class Bot extends TelegramLongPollingBot {
                 case "repartirentre":
                     message.setText(Sorteador.repartirEntre(restoDelMensaje));
                     break;
-                case "voice":
-                    enviarVoiceDesdeLocalServer("voice/db.mp3", chatId);
-                    break;
-                case "help":
-                    message.setText(getInfoComados());
+                case "/help":
+                    try {
+                        enviarDocumento(new InputFile(new File("data/informacionComandos/Guia_NaviBot.pdf")), chatId);
+                    } catch (Exception e) {
+                        System.out.println("Error enviando Guia_NaviBot.pdf " + e);
+                    }
                     break;
                 case "dibujartexto":
                     dibujarImagenTexto(chatId, restoDelMensaje, 330, 30, 30);
@@ -180,12 +175,14 @@ public class Bot extends TelegramLongPollingBot {
                             }
                         }
                     }
-
+                case "navi":
+                    String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras,
+                            comandoPrincipal);
+                    message.setText(GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras,
+                            etiqueta));
+                    break;
                 default:
-                    // String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras,
-                    // comandoPrincipal);
-                    // message.setText(GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras,
-                    // etiqueta));
+
             }
 
         }
@@ -196,17 +193,6 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         return "OfficialNavi_bot";
-    }
-
-    private InputFile getImageAsInpuFile(String rutaImagen) {
-        File image = null;
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            image = new File(classLoader.getResource(rutaImagen).getFile());
-        } catch (Exception e) {
-            System.out.println("Error al acceder a la imagen:");
-        }
-        return new InputFile(image);
     }
 
     public void enviarDocumento(InputFile documento, String chatId) throws Exception {
@@ -227,47 +213,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public void enviarImagenDesdeLocalServer(String rutaImagen, String chatId) {
-        try {
-            SendPhoto sendPhoto = new SendPhoto();
-            sendPhoto.setPhoto(getImageAsInpuFile(rutaImagen));
-            sendPhoto.setChatId(chatId);
-            execute(sendPhoto);
-        } catch (Exception h) {
-            System.out.println(h);
-        }
-    }
-
-    public void enviarStickerDesdeLocalServer(String rutaSticker, String chatId) {
-        try {
-            SendSticker sendSticker = new SendSticker();
-            sendSticker.setSticker(getImageAsInpuFile(rutaSticker));
-            sendSticker.setChatId(chatId);
-            execute(sendSticker);
-        } catch (Exception h) {
-            System.out.println(h);
-        }
-    }
-
-    public void enviarVoiceDesdeLocalServer(String rutaAudio, String chatId) {
-        try {
-            SendVoice sendVoice = new SendVoice();
-            sendVoice.setVoice(getImageAsInpuFile(rutaAudio));
-            sendVoice.setChatId(chatId);
-            execute(sendVoice);
-        } catch (Exception h) {
-            System.out.println(h);
-        }
-    }
-
-    private String getInfoComados() {
-        String comandosString = "";
-        for (int i = 0; i < comandosInfo.length; i++) {
-            comandosString = comandosString + (i + 1) + ". " + comandosInfo[i] + "\n";
-        }
-        return comandosString;
-    }
-
+    // Pasar este metodo a la clase <TrabajadorDeImagen>
     public void dibujarImagenTexto(String chatId, String texto, int lineWidth, int x, int y) {
         try {
             BufferedImage imagen = new BufferedImage(400, 400, BufferedImage.TYPE_INT_RGB);
