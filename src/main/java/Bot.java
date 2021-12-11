@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import java.awt.image.BufferedImage;
@@ -177,7 +176,7 @@ public class Bot extends TelegramLongPollingBot {
                     }
                 case "navi":
                     String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras,
-                            comandoPrincipal);
+                            restoDelMensaje);
                     message.setText(GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras,
                             etiqueta));
                     break;
