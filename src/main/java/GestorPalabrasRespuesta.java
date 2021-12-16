@@ -63,7 +63,7 @@ public class GestorPalabrasRespuesta {
             int numeroAleatorio = Sorteador.generarNumeroAleatorio(0, arrayPalabrasFrecuencia.size() - 1);
             return arrayPalabrasFrecuencia.get(numeroAleatorio);
         }else{
-            return null;
+            return "Hmm...";
         }
 
     }
@@ -74,6 +74,6 @@ public class GestorPalabrasRespuesta {
                 return arrayPalabras.get(i).getEtiqueta();
             }
         }
-        return null;
+        return "Hmm...";
     }
 }

@@ -12,9 +12,6 @@ import java.io.*;
 import java.util.ArrayList;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import java.awt.image.BufferedImage;
-import java.awt.*;
-import javax.imageio.ImageIO;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -61,7 +58,7 @@ public class Bot extends TelegramLongPollingBot {
         if (isReply) {
             Message mensajeReferenciado = update.getMessage().getReplyToMessage();
             Thread trabajadorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId,
-                    command.toLowerCase());
+                    comandoPrincipal);
             trabajadorDeImagen.start();
         } else {
             switch (comandoPrincipal) {
@@ -93,7 +90,9 @@ public class Bot extends TelegramLongPollingBot {
                     }
                     break;
                 case "dibujartexto":
-                    dibujarImagenTexto(chatId, restoDelMensaje, 330, 30, 30);
+                    Thread trabajadorDeImagen = new TrabajadorDeImagen(this, chatId,
+                            command);
+                    trabajadorDeImagen.start();
                     break;
                 case "temporizador":
                 case "temp":
@@ -112,6 +111,7 @@ public class Bot extends TelegramLongPollingBot {
                     break;
                 case "ppt":
                 case "jugar":
+                    //Pasar a metodo fuera de este metodo del update
                     int eleccionUsuario = 0; // piedra = 1, papel = 2, tijera = 3
 
                     if (restoDelMensaje.toLowerCase().equals("piedra")) {
@@ -174,11 +174,16 @@ public class Bot extends TelegramLongPollingBot {
                             }
                         }
                     }
+                    break;
                 case "navi":
                     String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras,
-                            restoDelMensaje);
-                    message.setText(GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras,
-                            etiqueta));
+                            restoDelMensaje.toLowerCase());
+
+                    String palabraRespuesta = GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras, etiqueta);
+                    palabraRespuesta = palabraRespuesta.toUpperCase().charAt(0)
+                            + palabraRespuesta.substring(1, palabraRespuesta.length()).toLowerCase();
+
+                    message.setText(palabraRespuesta);
                     break;
                 default:
 
@@ -212,39 +217,6 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    // Pasar este metodo a la clase <TrabajadorDeImagen>
-    public void dibujarImagenTexto(String chatId, String texto, int lineWidth, int x, int y) {
-        try {
-            BufferedImage imagen = new BufferedImage(400, 400, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2;
-
-            g2 = imagen.createGraphics();
-            g2.setColor(Color.white);
-            g2.fillRect(0, 0, 400, 400);
-            g2.setColor(Color.black);
-
-            int aum = g2.getFontMetrics().getHeight();
-            int contadorSaltos;
-            String[] lineasTexto = texto.split("\n");
-
-            for (int i = 0; i < lineasTexto.length; i++) {
-                contadorSaltos = dibujarLineaTexto(lineasTexto[i], g2, lineWidth, x, y);
-                y += aum * contadorSaltos;
-            }
-
-            File file = new File("prueba.png");
-            ImageIO.write(imagen, "png", file);
-            InputFile inputFile = new InputFile(file);
-            SendPhoto sendPhoto = new SendPhoto();
-            sendPhoto.setPhoto(inputFile);
-            sendPhoto.setChatId(chatId);
-            execute(sendPhoto);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-
-    }
-
     public void enviarMensaje(SendMessage message) {
         try {
             if (!message.getText().isEmpty()) {
@@ -254,31 +226,6 @@ public class Bot extends TelegramLongPollingBot {
             System.out.println(ex);
         }
 
-    }
-
-    private int dibujarLineaTexto(String texto, Graphics2D g2, int lineWidth, int x, int y) {
-        int c = 1;
-        FontMetrics m = g2.getFontMetrics();
-        if (m.stringWidth(texto) < lineWidth) {
-            g2.drawString(texto, x, y);
-        } else {
-            String[] words = texto.split(" ");
-            String currentLine = words[0];
-            for (int i = 1; i < words.length; i++) {
-                if (m.stringWidth(currentLine + words[i]) < lineWidth) {
-                    currentLine += " " + words[i];
-                } else {
-                    g2.drawString(currentLine, x, y);
-                    y += m.getHeight();
-                    currentLine = words[i];
-                    c += 1;
-                }
-            }
-            if (currentLine.trim().length() > 0) {
-                g2.drawString(currentLine, x, y);
-            }
-        }
-        return c;
     }
 
 }

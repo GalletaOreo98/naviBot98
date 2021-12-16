@@ -3,7 +3,6 @@ import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-
 import net.coobird.thumbnailator.Thumbnails;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
@@ -23,6 +22,11 @@ public class TrabajadorDeImagen extends Thread {
         this.chatId = chatId;
         this.comando = comando;
     }
+    public TrabajadorDeImagen(Bot bot, String chatId, String comando) {
+        this.bot = bot;
+        this.chatId = chatId;
+        this.comando = comando;
+    }
 
     public void run() {
         String comandoPrincipal;
@@ -34,16 +38,21 @@ public class TrabajadorDeImagen extends Thread {
             comandoPrincipal = partesDelComando[0];
             restoDelComando = partesDelComando[1];
         }
+        comandoPrincipal = comandoPrincipal.toLowerCase();
 
         switch (comandoPrincipal) {
             case "rz":
             case "resize":
                 bot.enviarMensaje(new SendMessage(chatId, "¡Trabajando reescalado de imagen!"));
-                resizeImagen(restoDelComando);
+                resizeImagen(restoDelComando.toLowerCase());
                 break;
             case "enmarcar":
                 bot.enviarMensaje(new SendMessage(chatId, "¡Trabajando enmarcado!"));
                 enmarcarImagen();
+                break;
+            case "dibujartexto":
+            bot.enviarMensaje(new SendMessage(chatId, "¡Trabajando en la imagen con texto!"));
+            dibujarImagenTexto(restoDelComando, 330, 30, 30);
             default:
                 break;
         }
@@ -151,5 +160,63 @@ public class TrabajadorDeImagen extends Thread {
             System.out.println(e.getMessage());
             bot.enviarMensaje(new SendMessage(chatId, "¡Ops! Algo salio mal."));
         }
+    }
+
+    private void dibujarImagenTexto(String texto, int lineWidth, int x, int y) {
+        try {
+            BufferedImage imagen = new BufferedImage(400, 400, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2;
+
+            g2 = imagen.createGraphics();
+            g2.setColor(Color.white);
+            g2.fillRect(0, 0, 400, 400);
+            g2.setColor(Color.black);
+
+            int aum = g2.getFontMetrics().getHeight();
+            int contadorSaltos;
+            String[] lineasTexto = texto.split("\n");
+
+            for (int i = 0; i < lineasTexto.length; i++) {
+                contadorSaltos = dibujarLineaTexto(lineasTexto[i], g2, lineWidth, x, y);
+                y += aum * contadorSaltos;
+            }
+
+            InputFile inputFile = new InputFile();
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write(imagen, "png", os);
+            InputStream is = new ByteArrayInputStream(os.toByteArray());
+            inputFile.setMedia(is, "TextoImagen");
+
+            bot.enviarImagen(inputFile, chatId);
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+    }
+
+    private int dibujarLineaTexto(String texto, Graphics2D g2, int lineWidth, int x, int y) {
+        int c = 1;
+        FontMetrics m = g2.getFontMetrics();
+        if (m.stringWidth(texto) < lineWidth) {
+            g2.drawString(texto, x, y);
+        } else {
+            String[] words = texto.split(" ");
+            String currentLine = words[0];
+            for (int i = 1; i < words.length; i++) {
+                if (m.stringWidth(currentLine + words[i]) < lineWidth) {
+                    currentLine += " " + words[i];
+                } else {
+                    g2.drawString(currentLine, x, y);
+                    y += m.getHeight();
+                    currentLine = words[i];
+                    c += 1;
+                }
+            }
+            if (currentLine.trim().length() > 0) {
+                g2.drawString(currentLine, x, y);
+            }
+        }
+        return c;
     }
 }

@@ -37,6 +37,7 @@ public class Sorteador {
         return cadenaSujetos;
     }
 
+    //Agregar a comando -mezclar- opcion retornar solo x elementos deseados
     public static String darFormatoSalidaLista(ArrayList<String> parts, int NElementosARetornar) {
         String cadenaSujetos = "";
         for (int i = 0; i < NElementosARetornar; i++) {
