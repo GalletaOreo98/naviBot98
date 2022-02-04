@@ -4,8 +4,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 public class App 
 {
-    public static void main( String[] args )
-    {
+    public static void main( String[] args ){
         Bot b = new Bot();
         try {
                 TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);

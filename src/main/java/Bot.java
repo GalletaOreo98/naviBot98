@@ -6,11 +6,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
-import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
 import java.io.*;
 import java.util.ArrayList;
-
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class Bot extends TelegramLongPollingBot {
@@ -111,8 +108,63 @@ public class Bot extends TelegramLongPollingBot {
                     break;
                 case "ppt":
                 case "jugar":
-                    //Pasar a metodo fuera de este metodo del update
-                    int eleccionUsuario = 0; // piedra = 1, papel = 2, tijera = 3
+                    this.jugarPPT(restoDelMensaje, chatId);
+                    break;
+                case "navi":
+                    String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras,
+                            restoDelMensaje.toLowerCase());
+
+                    String palabraRespuesta = GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras, etiqueta);
+                    palabraRespuesta = palabraRespuesta.toUpperCase().charAt(0)
+                            + palabraRespuesta.substring(1, palabraRespuesta.length()).toLowerCase();
+
+                    message.setText(palabraRespuesta);
+                    break;
+                default:
+
+            }
+
+        }
+
+        enviarMensaje(message);
+    }
+
+    @Override
+    public String getBotUsername() {
+        return "OfficialNavi_bot";
+    }
+
+    public void enviarDocumento(InputFile documento, String chatId) throws Exception {
+        SendDocument sendDocument = new SendDocument();
+        sendDocument.setDocument(documento);
+        sendDocument.setChatId(chatId);
+        execute(sendDocument);
+    }
+
+    public void enviarImagen(InputFile imagen, String chatId) {
+        try {
+            SendPhoto sendPhoto = new SendPhoto();
+            sendPhoto.setPhoto(imagen);
+            sendPhoto.setChatId(chatId);
+            execute(sendPhoto);
+        } catch (Exception h) {
+            System.out.println(h);
+        }
+    }
+
+    public void enviarMensaje(SendMessage message) {
+        try {
+            if (!message.getText().isEmpty()) {
+                execute(message);
+            }
+        } catch (TelegramApiException ex) {
+            System.out.println(ex);
+        }
+
+    }
+
+    public void jugarPPT(String restoDelMensaje, String chatId) {
+        int eleccionUsuario = 0; // piedra = 1, papel = 2, tijera = 3
 
                     if (restoDelMensaje.toLowerCase().equals("piedra")) {
                         eleccionUsuario = 1;
@@ -174,58 +226,6 @@ public class Bot extends TelegramLongPollingBot {
                             }
                         }
                     }
-                    break;
-                case "navi":
-                    String etiqueta = GestorPalabrasRespuesta.localizarEtiqueta(arrayPalabras,
-                            restoDelMensaje.toLowerCase());
-
-                    String palabraRespuesta = GestorPalabrasRespuesta.getPalabraRespuesta(arrayPalabras, etiqueta);
-                    palabraRespuesta = palabraRespuesta.toUpperCase().charAt(0)
-                            + palabraRespuesta.substring(1, palabraRespuesta.length()).toLowerCase();
-
-                    message.setText(palabraRespuesta);
-                    break;
-                default:
-
-            }
-
-        }
-
-        enviarMensaje(message);
-    }
-
-    @Override
-    public String getBotUsername() {
-        return "OfficialNavi_bot";
-    }
-
-    public void enviarDocumento(InputFile documento, String chatId) throws Exception {
-        SendDocument sendDocument = new SendDocument();
-        sendDocument.setDocument(documento);
-        sendDocument.setChatId(chatId);
-        execute(sendDocument);
-    }
-
-    public void enviarImagen(InputFile imagen, String chatId) {
-        try {
-            SendPhoto sendPhoto = new SendPhoto();
-            sendPhoto.setPhoto(imagen);
-            sendPhoto.setChatId(chatId);
-            execute(sendPhoto);
-        } catch (Exception h) {
-            System.out.println(h);
-        }
-    }
-
-    public void enviarMensaje(SendMessage message) {
-        try {
-            if (!message.getText().isEmpty()) {
-                execute(message);
-            }
-        } catch (TelegramApiException ex) {
-            System.out.println(ex);
-        }
-
     }
 
 }
