@@ -1,4 +1,9 @@
+package Trabajadores;
 import org.telegram.telegrambots.meta.api.objects.Message;
+
+import ObjetosYUtilidades.Sorteador;
+import Principal.Bot;
+
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.methods.GetFile;

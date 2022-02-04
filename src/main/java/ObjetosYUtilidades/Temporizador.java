@@ -1,4 +1,7 @@
+package ObjetosYUtilidades;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+
+import Principal.Bot;
 
 public class Temporizador extends Thread{
 

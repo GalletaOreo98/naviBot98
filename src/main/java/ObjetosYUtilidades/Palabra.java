@@ -1,3 +1,4 @@
+package ObjetosYUtilidades;
 import java.io.Serializable;
 
 public class Palabra implements Serializable{

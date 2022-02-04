@@ -1,4 +1,9 @@
+package Trabajadores;
 import java.util.ArrayList;
+
+import ObjetosYUtilidades.Palabra;
+import ObjetosYUtilidades.Sorteador;
+
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.FileOutputStream;

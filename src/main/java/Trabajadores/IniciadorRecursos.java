@@ -1,4 +1,6 @@
+package Trabajadores;
 import java.util.ArrayList;
+import ObjetosYUtilidades.Palabra;
 
 public class IniciadorRecursos {
     public static void main(String[] args) {
