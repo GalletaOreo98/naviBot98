@@ -64,7 +64,7 @@
             <assembleDirectory>target</assembleDirectory> 
             <programs>
                 <program>
-                    <mainClass>App</mainClass>
+                    <mainClass>Principal/App</mainClass>
                     <name>worker</name>
                 </program>
                 <program>
