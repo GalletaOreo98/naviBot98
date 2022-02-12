@@ -69,7 +69,8 @@ public class Bot extends TelegramLongPollingBot {
         if (isReply) {
             Message mensajeReferenciado = update.getMessage().getReplyToMessage();
             Thread trabajadorDeImagen = new TrabajadorDeImagen(this, mensajeReferenciado, chatId,
-                    comandoPrincipal);
+                    command);
+            System.out.println(command);
             trabajadorDeImagen.start();
         } else {
             switch (comandoPrincipal) {
